@@ -49,4 +49,9 @@ next-env.d.ts
 .vercel
 
 # tailwind JIT cache
-/.turbo
+/.turbotour-static.zip
+*.zip
+out/
+tour-static.zip
+*.zip
+out/
