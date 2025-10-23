@@ -1,3 +1,18 @@
+/**
+ * @fileoverview TourViewer organism component
+ * Organismo principal para visualización de tours virtuales 360° usando Three.js.
+ * Maneja renderizado de panoramas esféricos, hotspots interactivos, navegación
+ * orbital, auto-rotación, transiciones suaves y optimizaciones de rendimiento.
+ * 
+ * Implements Atomic Design Organisms pattern:
+ * - Componente complejo que integra múltiples tecnologías 3D
+ * - Maneja estado avanzado de renderización y navegación
+ * - Proporciona experiencia inmersiva de tour virtual
+ * 
+ * @author
+ * @version 2.0.0
+ */
+
 import dynamic from 'next/dynamic';
 import React, { Suspense, useRef, useState, useEffect } from 'react';
 import { Texture, Vector3, BackSide, SRGBColorSpace, LinearMipMapLinearFilter } from 'three';
@@ -8,11 +23,34 @@ import Hotspot from './Hotspot';
 import PANORAMA_META from '../../data/panoramas';
 import { loadPanoramaBitmap, prefetchPanoramas } from '../../utils/panoramaCache';
 
+/**
+ * Dynamic Canvas import to prevent SSR issues with Three.js
+ * Canvas se importa dinámicamente para evitar errores de hidratación en Next.js
+ */
 const Canvas = dynamic(() => import('@react-three/fiber').then(m => m.Canvas), { ssr: false });
 
+/**
+ * Type definition for hotspot configuration
+ * @typedef {Object} HotspotDef
+ * @property {string} id - Unique identifier for the hotspot
+ * @property {[number, number, number]} position - 3D position coordinates [x, y, z]
+ * @property {string} [label] - Optional display label for the hotspot
+ * @property {string} [target] - Optional target panorama ID for navigation
+ */
 type HotspotDef = { id: string; position: [number, number, number]; label?: string; target?: string };
 
-// helper: lon/lat -> xyz (same as antes)
+/**
+ * Helper function to convert longitude/latitude coordinates to 3D Cartesian coordinates
+ * Convierte coordenadas geográficas (lon/lat) a coordenadas cartesianas 3D para posicionamiento en esfera
+ * 
+ * @param lonDeg - Longitude in degrees (-180 to 180)
+ * @param latDeg - Latitude in degrees (-90 to 90)  
+ * @param radius - Sphere radius (default: 500)
+ * @returns {[number, number, number]} - Cartesian coordinates [x, y, z]
+ * 
+ * @example
+ * const position = posFromLonLat(45, 30, 500); // [x, y, z] for 45° lon, 30° lat
+ */
 function posFromLonLat(lonDeg: number, latDeg: number, radius = 500) {
   const lon = (lonDeg * Math.PI) / 180;
   const lat = (latDeg * Math.PI) / 180;
@@ -24,6 +62,61 @@ function posFromLonLat(lonDeg: number, latDeg: number, radius = 500) {
   return [x, y, z] as [number, number, number];
 }
 
+/**
+ * TourViewer Organism Component
+ * 
+ * Componente principal para visualización de tours virtuales 360°. Renderiza panoramas
+ * esféricos usando Three.js con soporte para hotspots interactivos, navegación orbital,
+ * auto-rotación, transiciones suaves y optimizaciones avanzadas de rendimiento.
+ * 
+ * Key Features:
+ * - Renderizado de panoramas 360° en esfera 3D
+ * - Hotspots interactivos para navegación entre panoramas
+ * - Auto-rotación después de período de inactividad
+ * - Transiciones suaves con sistema de blackout
+ * - Caché inteligente de panoramas para navegación fluida
+ * - Recuperación automática de errores WebGL
+ * - Optimizaciones de rendimiento y memoria
+ * 
+ * Technical Implementation:
+ * - Three.js con @react-three/fiber para renderizado 3D
+ * - ImageBitmap API para manejo eficiente de texturas
+ * - OrbitControls para navegación interactiva
+ * - Sistema de prefetch para reducir latencia
+ * - Manejo robusto de contexto WebGL perdido
+ * 
+ * Performance Optimizations:
+ * - Dynamic Canvas import para evitar SSR
+ * - Texture caching y reutilización
+ * - Mipmap generation para calidad visual
+ * - Anisotropic filtering cuando está disponible
+ * - Stabilization frames para evitar jumpiness
+ * 
+ * Design Pattern: Atomic Design Organism
+ * - Combina Hotspot organisms para navegación
+ * - Maneja estado complejo de renderización 3D
+ * - Interfaz autónoma para experiencia inmersiva
+ * 
+ * @param props - TourViewer configuration object
+ * @param props.src - Source path for the panorama image
+ * @param props.hotspots - Array of interactive hotspots with positions and targets
+ * @param props.onHotspotClick - Callback when hotspot is clicked for navigation
+ * @param props.blackoutMs - Duration of blackout overlay after load (default: 25ms)
+ * @returns JSX.Element representing the 3D tour viewer
+ * 
+ * @example
+ * ```tsx
+ * <TourViewer 
+ *   src="/panoramas/sala-principal.jpg"
+ *   hotspots={[
+ *     { id: "cocina", position: [100, 0, 200], label: "Cocina", target: "cocina" },
+ *     { id: "terraza", position: [-150, 50, 100], label: "Terraza", target: "terraza" }
+ *   ]}
+ *   onHotspotClick={(id) => navigateTo(id)}
+ *   blackoutMs={250}
+ * />
+ * ```
+ */
 export default function TourViewer({
   src,
   hotspots = [],

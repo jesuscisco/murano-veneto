@@ -1,10 +1,91 @@
+/**
+ * @fileoverview Hotspots Configuration
+ * Configuración de todos los hotspots (puntos de navegación) para cada panorama.
+ * Define posiciones 3D, etiquetas y destinos de navegación para el tour virtual.
+ * 
+ * Data Structure:
+ * - Mapeo de panoramas a arrays de hotspots
+ * - Coordenadas 3D precisas para cada punto de navegación
+ * - Sistema de navegación bidireccional entre panoramas
+ * 
+ * @author
+ * @version 1.0.0
+ */
+
+/**
+ * Type definition for hotspot data structure
+ * @interface HotspotData
+ */
 export type HotspotData = {
+  /**
+   * Unique identifier for the hotspot
+   * Identificador único para el hotspot
+   */
   id: string;
+  
+  /**
+   * 3D position coordinates [x, y, z] in world space
+   * Coordenadas de posición 3D [x, y, z] en espacio mundial
+   * @example [800, -50, 50] - Position on the sphere surface
+   */
   position: [number, number, number];
+  
+  /**
+   * Display label for accessibility and user interface
+   * Etiqueta para mostrar en interfaz y accesibilidad
+   */
   label: string;
-  target?: string; // ruta al panorama destino (si aplica)
+  
+  /**
+   * Target panorama path for navigation (optional)
+   * Ruta del panorama destino para navegación (opcional)
+   * @example '/panoramas/sala-principal.png'
+   */
+  target?: string;
 };
 
+/**
+ * Hotspots Configuration Map
+ * 
+ * Configuración completa de todos los hotspots para cada panorama del tour.
+ * Cada entrada mapea una ruta de panorama a un array de hotspots que permiten
+ * la navegación hacia otros espacios del tour virtual.
+ * 
+ * Key Features:
+ * - Navegación bidireccional entre panoramas
+ * - Posicionamiento 3D preciso en la esfera
+ * - Etiquetas descriptivas para cada punto de navegación
+ * - Estructura escalable para agregar nuevos panoramas
+ * 
+ * Coordinate System:
+ * - X axis: -1000 to +1000 (left to right)
+ * - Y axis: -1000 to +1000 (down to up)  
+ * - Z axis: -1000 to +1000 (back to front)
+ * - Positions should be on or near sphere surface (radius ~500)
+ * 
+ * Navigation Flow:
+ * - INICIO -> 1: Entry point to main tour
+ * - 1 <-> 2: Bidirectional navigation between main areas
+ * - 2 -> 3,4,5: Multiple options from central location
+ * - 5 -> 6 -> 7,8: Sequential progression through spaces
+ * - 8 -> 9,10: Final areas of the tour
+ * 
+ * Best Practices:
+ * - Use descriptive IDs (to-kitchen, to-living-room)
+ * - Position hotspots at natural transition points
+ * - Ensure reciprocal navigation where logical
+ * - Test positions in 3D space for optimal visibility
+ * - Maintain consistent hotspot sizing and appearance
+ * 
+ * @const HOTSPOTS_MAP
+ * @type {Record<string, HotspotData[]>}
+ * 
+ * @example
+ * ```typescript
+ * const hotspotsForRoom = HOTSPOTS_MAP['/panoramas/INICIO.png'];
+ * // [{ id: 'to-1', position: [800, -50, 50], label: 'Ir a 1', target: '/panoramas/1.png' }]
+ * ```
+ */
 const HOTSPOTS_MAP: Record<string, HotspotData[]> = {
   '/panoramas/INICIO.png': [
     { id: 'to-1', position: [800, -50, 50], label: 'Ir a 1', target: '/panoramas/1.png' },

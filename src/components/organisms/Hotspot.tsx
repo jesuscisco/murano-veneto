@@ -1,8 +1,74 @@
+/**
+ * @fileoverview Hotspot organism component
+ * Organismo interactivo 3D que representa puntos de navegación dentro del tour virtual.
+ * Maneja visibilidad basada en orientación de cámara, animaciones, y eventos de click.
+ * 
+ * Implements Atomic Design Organisms pattern:
+ * - Componente 3D autónomo con lógica compleja de visibilidad
+ * - Integra HTML overlay con posicionamiento 3D
+ * - Maneja interacciones y estados visuales avanzados
+ * 
+ * @author
+ * @version 1.0.0
+ */
+
 import React, { useRef } from 'react';
 import { Html } from '@react-three/drei';
 import { Object3D, Vector3 } from 'three';
 import { useFrame } from '@react-three/fiber';
 
+/**
+ * Hotspot Organism Component
+ * 
+ * Punto interactivo 3D que aparece dentro del panorama para permitir navegación
+ * entre diferentes ubicaciones del tour. Se renderiza como overlay HTML posicionado
+ * en espacio 3D con cálculos de visibilidad basados en la orientación de la cámara.
+ * 
+ * Key Features:
+ * - Posicionamiento 3D preciso en coordenadas del mundo
+ * - Cálculo dinámico de visibilidad basado en dot product cámara-hotspot
+ * - Animaciones CSS suaves para aparición/desaparición
+ * - Animación de pulso continua para llamar la atención
+ * - Transiciones suaves de opacidad y transformación
+ * - Eventos de click para navegación entre panoramas
+ * 
+ * Technical Implementation:
+ * - useFrame hook para cálculos de visibilidad en cada frame
+ * - Vector3 math para determinación de orientación relativa
+ * - Html component de @react-three/drei para overlay 2D en 3D
+ * - CSS keyframes para animaciones de pulso
+ * - Threshold configurable para control de visibilidad
+ * 
+ * Visibility Logic:
+ * - Calcula dirección de cámara y vector hacia hotspot
+ * - Usa dot product para determinar si está en campo de visión
+ * - Threshold de -0.35 permite visibilidad extendida
+ * - Transiciones suaves previenen popping visual
+ * 
+ * Design Pattern: Atomic Design Organism
+ * - Componente 3D especializado para navegación
+ * - Maneja toda la lógica de visibilidad y interacción
+ * - Interfaz autónoma para puntos de navegación
+ * 
+ * @param props - Hotspot configuration object
+ * @param props.id - Unique identifier for the hotspot
+ * @param props.position - 3D position Vector3 in world coordinates
+ * @param props.label - Accessibility label for screen readers (default: 'Entrar')
+ * @param props.camera - Three.js camera reference for visibility calculations
+ * @param props.onClick - Callback function when hotspot is clicked
+ * @returns JSX.Element representing the 3D hotspot
+ * 
+ * @example
+ * ```tsx
+ * <Hotspot 
+ *   id="kitchen"
+ *   position={new Vector3(150, 0, -200)}
+ *   label="Ir a la Cocina"
+ *   camera={camera}
+ *   onClick={(id) => navigateToRoom(id)}
+ * />
+ * ```
+ */
 export default function Hotspot({
   id,
   position,
